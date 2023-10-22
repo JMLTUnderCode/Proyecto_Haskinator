@@ -4,8 +4,8 @@
 import System.IO
 import qualified Data.Map as Map
 
-data Oraculo = Prediccion String | Pregunta String (Map.Map String Oraculo)
-    deriving (Show, Read)
+data Oraculo = Prediccion String | Pregunta String Opciones
+type Opciones = Map.Map String Oraculo
 
 main :: IO ()
 main = do
