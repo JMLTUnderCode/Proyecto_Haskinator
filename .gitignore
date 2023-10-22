@@ -25,4 +25,4 @@ cabal.project.local
 .idea/
 
 # Project
-haskinator
+build
