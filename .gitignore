@@ -1,0 +1,28 @@
+# Haskell
+dist
+dist-*
+cabal-dev
+*.o
+*.hi
+*.chi
+*.chs.h
+*.dyn_o
+*.dyn_hi
+*.prof
+*.aux
+*.hp
+*.eventlog
+.stack-work/
+cabal.sandbox.config
+cabal.config
+cabal.project.local
+.stack-work/
+
+# IDEs
+.vscode/
+*.code-workspace
+*.sublime-workspace
+.idea/
+
+# Project
+haskinator
