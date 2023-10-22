@@ -25,8 +25,8 @@ header = do
     putStrLn("                                    AUTORES")
     putStrLn("-------------------------------------------------------------------------------")
     putStrLn("XX-XXXXX | Nombre Apellido")
-    putStrLn("XX-XXXXX | Nombre Apellido")
-    putStrLn("XX-XXXXX | Nombre Apellido")
+    putStrLn("17-10303 | Junior Lara")
+    putStrLn("18-10938 | Astrid Alvarado")
     putStrLn("15-11377 | Carlos Sivira")                                                                    
     putStrLn("-------------------------------------------------------------------------------")
 
