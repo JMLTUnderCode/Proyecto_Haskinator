@@ -1,22 +1,25 @@
-import Show1
+import Oraculo
 import qualified Data.Map as Map
 
 main::IO()
 main = do
+    putStrLn "\ntest 1"
+    let test1 = Prediccion "Prediccion directa"
+    putStrLn $ show test1 
+    print $ show test1 
 
-    putStrLn $ show (Prediccion "hola bebe")
+    putStrLn "\ntest 2"
+    let test2 = Pregunta "Estas bien?" (Map.fromList [("No", Pregunta "Estas enferma?" (Map.fromList [("Si", Prediccion "Comiste mal"), ("No", Prediccion "Comiste bien")]))])
+    putStrLn $ show test2
+    print $ show test2
 
-    let oraculoFast = Pregunta "hola?" (Map.fromList [("No", Pregunta "Ayer?" (Map.fromList [("Si", Prediccion "uwu"), ("No", Prediccion "tomate")]))])
-    putStrLn $ show oraculoFast
-  
-    let otro = Pregunta "a" (Map.fromList [("b", Pregunta "c" (Map.fromList [("d", Prediccion "e")])), 
+    putStrLn "\ntest 3"
+    let test3 = Pregunta "a" (Map.fromList [("b", Pregunta "c" (Map.fromList [("d", Prediccion "e")])), 
                           ("f", Pregunta "g" (Map.fromList [("h", Prediccion "i")]))])
-    putStrLn $ show otro
+    putStrLn $ show test3
+    print $ show test3
 
-    let otro1 = Pregunta "hola?" (Map.fromList [("No", Pregunta "Ayer?" (Map.fromList [("Si", Prediccion "Paracetamol"), ("No", Prediccion "tomate")]))])
-    putStrLn $ show otro1
-
-    let otro2 = Pregunta "hola?" (Map.fromList [("So", Prediccion "uwu"), ("No", Prediccion "tomate")])
-    putStrLn $ show otro2
-
-    print $ Map.keys (Map.fromList [("Si", Prediccion "uwu"), ("No", Prediccion "tomate")])
+    putStrLn "\ntest 4"
+    let test4 = Pregunta "Es lenguaje?" (Map.fromList [("Si", Prediccion "Haskell"), ("No", Prediccion "Cancion")])
+    putStrLn $ show test4
+    print $ show test4
