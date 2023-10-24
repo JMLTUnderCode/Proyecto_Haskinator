@@ -1,0 +1,9 @@
+Es un lenguaje de programacion?
+	- Si: A que paradigma pertenece?
+		- Imperativo: A quien pertenece?
+			- Oracle: Java
+			- Microsoft: C#
+			- Google: Go
+		- Funcional: Haskell
+		- Logico: Prolog
+	- No: HTML
