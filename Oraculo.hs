@@ -98,7 +98,7 @@ module Oraculo where
 -----------------------------------------------------------------------------------
 ---------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
 
-    -- crearOraculo :: String -> Oraculo
+    crearOraculo :: String -> Oraculo
+    crearOraculo = Prediccion
 
-    
     -- ramificar :: [String] -> [Oraculo] -> String -> Oraculo
