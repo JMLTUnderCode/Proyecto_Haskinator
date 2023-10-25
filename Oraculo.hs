@@ -1,10 +1,18 @@
-module Oraculo where
+module Oraculo (
+    Oraculo (..),
+    Opciones,
+    crearOraculo,
+    prediccion,
+    pregunta,
+    opciones,
+    respuesta
+) where
 
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
     import qualified Data.Map as Map
     import Control.Monad (forM)
     import Data.Maybe (fromJust)
-    import Data.List.Split
+    import Data.List.Split (splitOn)
     import Data.List (isInfixOf)
 
 --------------------------------  TIPOS DE DATOS  ---------------------------------
