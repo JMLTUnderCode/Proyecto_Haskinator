@@ -99,7 +99,9 @@ module Oraculo (
 -----------------------------------------------------------------------------------
 ----------------------------  FUNCIONES DE INSPECCION  ----------------------------
 
-    -- obtenerCadena
+    obtenerCadena :: Oraculo -> String -> Maybe [(String, String)]
+    obtenerCadena (Prediccion _) _ = Nothing
+    -- obtenerCadena (Pregunta _ op) answer =
 
     --obtenerEstadisticas
 
@@ -109,4 +111,8 @@ module Oraculo (
     crearOraculo :: String -> Oraculo
     crearOraculo = Prediccion
 
-    -- ramificar :: [String] -> [Oraculo] -> String -> Oraculo
+    ramificar :: [String] -> [Oraculo] -> String -> Oraculo
+    ramificar [] [] _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar [] _ _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar _ [] _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar ops oracls preg = Pregunta preg $ Map.fromList $ zip ops oracls
