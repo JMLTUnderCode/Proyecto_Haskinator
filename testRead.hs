@@ -4,14 +4,14 @@ main :: IO()
 main = do
   -- Para probar la funcion readData que usa la instancia Read
   putStrLn "\ntest 1"
-  putStrLn $ show $ readData ["a\n\t- b: c\n\t\t- d: e\n\t- f: g\n\t\t- h: i"] 1
-  
+  print $ readData ["a\n\t- b: c\n\t\t- d: e\n\t- f: g\n\t\t- h: i"] 1
+
   putStrLn "\ntest 2"
-  putStrLn $ show $ readData ["Estas bien?\n\t- No: Estas enferma?\n\t\t- No: Comiste bien\n\t\t- Si: Comiste mal"] 1
-  
+  print $ readData ["Estas bien?\n\t- No: Estas enferma?\n\t\t- No: Comiste bien\n\t\t- Si: Comiste mal"] 1
+
   putStrLn "\ntest 3"
-  putStrLn $ show $ readData ["Prediccion directa"] 1
-  
+  print $ readData ["Prediccion directa"] 1
+
   -- Para probar la instancia read directamente, realizar en consola
   -- cargando el modulo al interprete.
   -- ghci Oraculo.hs

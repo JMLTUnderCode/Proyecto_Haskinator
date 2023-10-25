@@ -13,7 +13,7 @@ module Oraculo where
         Prediccion de tipo string y Pregunta de tipo String mas 
         opciones. -}
     data Oraculo = Prediccion String | Pregunta String Opciones
-    
+
     {-  El alias Opciones permite simular mediante un mapa de llaves
         de tipo String a Oraculos la ramificacion del conocimiento de
         Haskinator. -}
@@ -24,14 +24,14 @@ module Oraculo where
     -- Redefinicion de instancia Show para el tipo de dato Oraculo.
     instance Show Oraculo where
         show :: Oraculo -> String
-        show (Prediccion str) = showData (Prediccion str) 1
+        show (Prediccion str) = str
         show (Pregunta str op) = showData (Pregunta str op) 1
-    
+
     {-  Funcion que permite realizar identacion mediante tabulaciones
         de cantidad n dado por argumento. -}
-    identation:: Int -> String 
+    identation:: Int -> String
     identation n = "\n" ++ concat (replicate n "\t") ++ "- "
-    
+
     -- Funcion que dado un mapa de opciones extraemos para cada elemento la llave.
     getKeys:: Opciones -> [String]
     getKeys = map fst . Map.toList
@@ -43,7 +43,7 @@ module Oraculo where
             identation n ++ a ++ ": "
             ++ showData (fromJust $ Map.lookup a op) (n + 1)
         ) (getKeys op)
-    
+
     -----------------------------------------------------------------------------------
     -- Redefinicion de instancia Read para el tipo de dato Oraculo.
     instance Read Oraculo where
@@ -55,17 +55,17 @@ module Oraculo where
     readData :: [String] -> Int -> Oraculo
     readData input n = do
         if length input == 1 && not ("\t" `isInfixOf` concat input) then do
-            
-            if ":" `isInfixOf` concat input then 
+
+            if ":" `isInfixOf` concat input then
               Prediccion $ splitOn ": " (head input) !! 1
-              else 
+              else
                 Prediccion $ head input
             else do
                 let splitedAux = concatMap (splitOn (identation n)) input
                 let elements = tail splitedAux
-                let list1 = map (takeWhile (/= ':')) elements  
-                let list2 = map (drop 2 . dropWhile (/= ':')) elements 
-                let list3 = map (\x -> readData [x] (n+1)) list2 
+                let list1 = map (takeWhile (/= ':')) elements
+                let list2 = map (drop 2 . dropWhile (/= ':')) elements
+                let list3 = map (\x -> readData [x] (n+1)) list2
                 let list4 = zip list1 list3
                 Pregunta (head splitedAux) $ Map.fromList list4
 
@@ -74,7 +74,7 @@ module Oraculo where
 
     prediccion :: Oraculo -> String
     prediccion (Prediccion pred) = pred
-    prediccion (Pregunta _ _) = error "No se puede obtener algo de tipo 'Prediccion' de algo tipo 'Pregunta'" 
+    prediccion (Pregunta _ _) = error "No se puede obtener algo de tipo 'Prediccion' de algo tipo 'Pregunta'"
 
     pregunta :: Oraculo -> String
     pregunta (Pregunta preg _) = preg
