@@ -119,6 +119,25 @@ module Oraculo (
         ++ concatMap (`paso` pred) (Map.elems op)
 
     --obtenerEstadisticas
+    obtenerEstadisticas :: Oraculo -> (Float, Float, Float)
+    obtenerEstadisticas orac = (
+        minimum depths,
+        maximum depths,
+        sum depths / fromIntegral (length depths)
+        ) where
+            depths = fromIntegral <$> profundidades orac
+
+    profundidades :: Oraculo -> [Int]
+    profundidades (Prediccion _) = [0]
+    profundidades (Pregunta preg op) = map (obtenerProfundidad (Pregunta preg op)) (obtenerPredicciones (Pregunta preg op))
+    
+    obtenerProfundidad :: Oraculo -> String -> Int
+    obtenerProfundidad (Prediccion _) _ = 0
+    obtenerProfundidad orac pred
+        | pred `notElem` obtenerPredicciones orac = 0
+        | otherwise = 1 + maximum (map (`obtenerProfundidad` pred) (Map.elems $ opciones orac))
+    
+
 
 -----------------------------------------------------------------------------------
 ---------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
