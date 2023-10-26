@@ -2,10 +2,12 @@ module Oraculo (
     Oraculo (..),
     Opciones,
     crearOraculo,
+    ramificar,
     prediccion,
     pregunta,
     opciones,
-    respuesta
+    respuesta,
+    obtenerCadena
 ) where
 
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
@@ -101,7 +103,20 @@ module Oraculo (
 
     obtenerCadena :: Oraculo -> String -> Maybe [(String, String)]
     obtenerCadena (Prediccion _) _ = Nothing
-    -- obtenerCadena (Pregunta _ op) answer =
+    obtenerCadena orac pred
+        | pred `notElem` obtenerPredicciones orac = Nothing
+        | otherwise = Just $ paso orac pred
+
+    obtenerPredicciones :: Oraculo -> [String]
+    obtenerPredicciones (Prediccion pred) = [pred]
+    obtenerPredicciones (Pregunta _ op) = [pred | (k, v) <- Map.toList op, pred <- obtenerPredicciones v]
+
+    paso :: Oraculo -> String -> [(String, String)]
+    paso (Prediccion _) _ = []
+    paso (Pregunta preg op) pred
+        | pred `notElem` obtenerPredicciones (Pregunta preg op) = []
+        | otherwise = [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
+        ++ concatMap (`paso` pred) (Map.elems op)
 
     --obtenerEstadisticas
 
