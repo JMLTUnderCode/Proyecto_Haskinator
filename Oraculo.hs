@@ -10,7 +10,7 @@ module Oraculo (
     obtenerCadena,
     obtenerEstadisticas
 ) where
-
+ 
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
     import qualified Data.Map as Map
     import Control.Monad (forM)
@@ -35,69 +35,78 @@ module Oraculo (
     -- Redefinicion de instancia Show para el tipo de dato Oraculo.
     instance Show Oraculo where
         show :: Oraculo -> String
-        show (Prediccion str) = str
+        show (Prediccion str) = showData (Prediccion str) 1
         show (Pregunta str op) = showData (Pregunta str op) 1
-
+    
     {-  Funcion que permite realizar identacion mediante tabulaciones
         de cantidad n dado por argumento. -}
-    identation:: Int -> String
+    identation:: Int -> String 
     identation n = "\n" ++ concat (replicate n "\t") ++ "- "
-
-    -- Funcion que dado un mapa de opciones extraemos para cada elemento la llave.
-    getKeys:: Opciones -> [String]
-    getKeys = map fst . Map.toList
-
+    
     -- Funcion que permite mostrar el arbol de conocimiento de Haskinator.
     showData :: Oraculo -> Int -> String
     showData (Prediccion str) _ = str
     showData (Pregunta str op) n = str ++ concatMap (\a -> do
             identation n ++ a ++ ": "
             ++ showData (fromJust $ Map.lookup a op) (n + 1)
-        ) (getKeys op)
+        ) (Map.keys op)
 
     -----------------------------------------------------------------------------------
     -- Redefinicion de instancia Read para el tipo de dato Oraculo.
     instance Read Oraculo where
-      readsPrec :: Int -> String -> [(Oraculo, String)]
-      readsPrec _ input = [(readData [input] 1, "")]
+        readsPrec :: Int -> String -> [(Oraculo, String)]
+        readsPrec _ input = [(readData [input] 1, "")]
 
     {-  Funcion que permite leer para el formato definido de Haskinator 
         a la estructura principal Oraculo que almacenara el "conocimiento".-}
     readData :: [String] -> Int -> Oraculo
     readData input n = do
         if length input == 1 && not ("\t" `isInfixOf` concat input) then do
-
-            if ":" `isInfixOf` concat input then
-              Prediccion $ splitOn ": " (head input) !! 1
-              else
-                Prediccion $ head input
+            Prediccion $ head input
             else do
-                let splitedAux = concatMap (splitOn (identation n)) input
-                let elements = tail splitedAux
-                let list1 = map (takeWhile (/= ':')) elements
-                let list2 = map (drop 2 . dropWhile (/= ':')) elements
-                let list3 = map (\x -> readData [x] (n+1)) list2
-                let list4 = zip list1 list3
-                Pregunta (head splitedAux) $ Map.fromList list4
+                -- Extraccion de nodo pregunta y ramas asociadas.
+                let splitedTree = concatMap (splitOn (identation n)) input
+
+                -- Elementos restantes del split realizado.
+                let elements = tail splitedTree
+
+                -- Lista de respuestas para cada elemento restante.
+                let answerList = map (takeWhile (/= ':')) elements 
+
+                -- Lista de oraculos a traducir por cada elemento restante. 
+                let oracleList = map (drop 2 . dropWhile (/= ':')) elements
+
+                -- Lista de oraculos traducidos de las cuales se realizan llamadas recursivas
+                -- por cada subrama dada en la lista de oraculos disponibles.
+                let translatedOracles = map (\x -> readData [x] (n+1)) oracleList 
+
+                -- Emparejamiento de respuestas a la pregunta nodo principal con los oraculos traducidos.
+                let tuples = zip answerList translatedOracles
+
+                -- Creacion de subarboles de datos.
+                Pregunta (head splitedTree) $ Map.fromList tuples
 
 -----------------------------------------------------------------------------------
 -----------------------------  FUNCIONES DE ACCESO  -------------------------------
 
     prediccion :: Oraculo -> String
-    prediccion (Prediccion pred) = pred
-    prediccion (Pregunta _ _) = error "No se puede obtener algo de tipo 'Prediccion' de algo tipo 'Pregunta'"
+    prediccion (Prediccion prediction) = prediction
+    prediccion (Pregunta _ _) = error "No se puede obtener algo de tipo 'Prediccion' de algo tipo 'Pregunta'." 
 
     pregunta :: Oraculo -> String
-    pregunta (Pregunta preg _) = preg
-    pregunta (Prediccion _) =  error "No se puede obtener algo de tipo 'Pregunta' de algo tipo 'Prediccion'"
+    pregunta (Pregunta question _) = question
+    pregunta (Prediccion _) =  error "No se puede obtener algo de tipo 'Pregunta' de algo tipo 'Prediccion'."
 
     opciones :: Oraculo -> Opciones
-    opciones (Pregunta _ op) = op
-    opciones (Prediccion _ ) = error "No se pueden obterner opciones a partir de algo tipo 'Prediccion'"
+    opciones (Pregunta _ options) = options
+    opciones (Prediccion _ ) = error "No se pueden obterner opciones a partir de algo tipo 'Prediccion'."
 
     respuesta :: Oraculo -> String -> Oraculo
-    respuesta (Pregunta _ option) answer = fromJust $ Map.lookup answer option
-    respuesta (Prediccion _) _ = error "No se pueden obterner respuestas a partir de algo tipo 'Prediccion'"
+    respuesta (Pregunta _ options) answer = case
+        Map.lookup answer options of
+            Just newOp -> newOp
+            Nothing -> error $ "No existen opciones asociadas a la respuesta '" ++ answer ++ "'."
+    respuesta (Prediccion _) _ = error "No se pueden obterner respuestas a partir de algo tipo 'Prediccion'."
 
 -----------------------------------------------------------------------------------
 ----------------------------  FUNCIONES DE INSPECCION  ----------------------------
@@ -136,8 +145,6 @@ module Oraculo (
     obtenerProfundidad orac pred
         | pred `notElem` obtenerPredicciones orac = 0
         | otherwise = 1 + maximum (map (`obtenerProfundidad` pred) (Map.elems $ opciones orac))
-    
-
 
 -----------------------------------------------------------------------------------
 ---------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
