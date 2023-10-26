@@ -1,4 +1,12 @@
-module Oraculo where
+module Oraculo (
+    Oraculo (..),
+    Opciones,
+    crearOraculo,
+    prediccion,
+    pregunta,
+    opciones,
+    respuesta
+) where
 
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
     import qualified Data.Map as Map
@@ -100,7 +108,9 @@ module Oraculo where
 -----------------------------------------------------------------------------------
 ----------------------------  FUNCIONES DE INSPECCION  ----------------------------
 
-    -- obtenerCadena
+    obtenerCadena :: Oraculo -> String -> Maybe [(String, String)]
+    obtenerCadena (Prediccion _) _ = Nothing
+    -- obtenerCadena (Pregunta _ op) answer =
 
     -- obtenerEstadisticas
 
