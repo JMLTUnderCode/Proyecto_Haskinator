@@ -7,7 +7,8 @@ module Oraculo (
     pregunta,
     opciones,
     respuesta,
-    obtenerCadena
+    obtenerCadena,
+    obtenerEstadisticas
 ) where
 
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
@@ -118,7 +119,6 @@ module Oraculo (
         | otherwise = [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
         ++ concatMap (`paso` pred) (Map.elems op)
 
-    --obtenerEstadisticas
     obtenerEstadisticas :: Oraculo -> (Float, Float, Float)
     obtenerEstadisticas orac = (
         minimum depths,
