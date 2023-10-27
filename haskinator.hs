@@ -181,9 +181,11 @@ cliente oraculo = do
             cliente oraculo
 
         "6" -> do -- Estadísticas
-            putStrLn "Mínimo: ~"
-            putStrLn "Máximo: ~"
-            putStrLn "Promedio: ~"
+            let (omin, omax, oavg) = obtenerEstadisticas oraculo
+
+            putStrLn $ "min: " ++ show omin 
+                ++ "        max: " ++ show omax 
+                ++ "        avg: " ++ show oavg
 
             cliente oraculo
 
