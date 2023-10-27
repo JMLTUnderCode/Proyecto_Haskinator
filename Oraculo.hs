@@ -115,18 +115,18 @@ module Oraculo (
     obtenerCadena (Prediccion _) _ = Nothing
     obtenerCadena orac pred
         | pred `notElem` obtenerPredicciones orac = Nothing
-        | otherwise = Just $ paso orac pred
+        | otherwise = Just $ camino orac pred
 
     obtenerPredicciones :: Oraculo -> [String]
     obtenerPredicciones (Prediccion pred) = [pred]
     obtenerPredicciones (Pregunta _ op) = [pred | (k, v) <- Map.toList op, pred <- obtenerPredicciones v]
 
-    paso :: Oraculo -> String -> [(String, String)]
-    paso (Prediccion _) _ = []
-    paso (Pregunta preg op) pred
+    camino :: Oraculo -> String -> [(String, String)]
+    camino (Prediccion _) _ = []
+    camino (Pregunta preg op) pred
         | pred `notElem` obtenerPredicciones (Pregunta preg op) = []
-        | otherwise = [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
-        ++ concatMap (`paso` pred) (Map.elems op)
+        | otherwise = head [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
+        : camino (head [o | o <- Map.elems op, pred `elem` obtenerPredicciones o]) pred
 
     obtenerEstadisticas :: Oraculo -> (Float, Float, Float)
     obtenerEstadisticas orac = (
