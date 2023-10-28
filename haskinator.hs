@@ -178,12 +178,18 @@ cliente oraculo = do
             putStrLn "Indica la segunda cadena"
             pred2 <- getLine
 
+            case preguntaCrucial oraculo pred1 pred2 of
+                Just (pregunta, opcion1, opcion2) -> do
+                    putStrLn $ "Pregunta: '" ++ pregunta ++ "'"
+                    putStrLn $ "La opción '" ++ opcion1 ++ "' lleva a '" ++ pred1 ++ "'"
+                    putStrLn $ "La opción '" ++ opcion2 ++ "' lleva a '" ++ pred2 ++ "'"
+                Nothing -> putStrLn "No se encontró una pregunta crucial."
+
             cliente oraculo
 
         "6" -> do -- Estadísticas
-            putStrLn "Mínimo: ~"
-            putStrLn "Máximo: ~"
-            putStrLn "Promedio: ~"
+            let (oMin, oMax, oAvg) = obtenerEstadisticas oraculo
+            putStrLn $ "min: " ++ show oMin ++ "       max: " ++ show oMax ++ "      avg: " ++ show oAvg
 
             cliente oraculo
 
