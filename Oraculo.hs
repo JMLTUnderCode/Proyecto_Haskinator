@@ -8,7 +8,8 @@ module Oraculo (
     opciones,
     respuesta,
     obtenerCadena,
-    obtenerEstadisticas
+    obtenerEstadisticas,
+    preguntaCrucial
 ) where
  
 -----------------------------  IMPORTACION DE MODULOS -----------------------------
@@ -157,3 +158,28 @@ module Oraculo (
     ramificar [] _ _ = error "No se puede ramificar un oraculo sin opciones"
     ramificar _ [] _ = error "No se puede ramificar un oraculo sin opciones"
     ramificar ops oracls preg = Pregunta preg $ Map.fromList $ zip ops oracls
+
+
+
+-----------------------------------------------------------------------------------
+-----------------------------  FUNCIONES ADICIONALES  -----------------------------
+    -- Funcion que dado un oraculo y dos strings retorna el ancestro comun mas 
+    -- bajo en el arbol informacion descrito por Oraculo.
+    preguntaCrucial :: Oraculo -> String -> String -> Maybe (String, String, String)
+    preguntaCrucial oraculo pred1 pred2 = do
+        c1 <- obtenerCadena oraculo pred1
+        c2 <- obtenerCadena oraculo pred2
+        if null c1 || null c2 then Nothing
+        else do
+            let cC = caminoComun c1 c2
+            let l = length cC
+            let c1Diff = drop l c1
+            let c2Diff = drop l c2
+            Just (fst $ head c1Diff, snd $ head c1Diff, snd $ head c2Diff)
+
+    caminoComun :: [(String, String)] -> [(String, String)] -> [(String, String)]
+    caminoComun [] _ = []
+    caminoComun _ [] = []
+    caminoComun (xh : xt) (yh : yt) 
+        | xh == yh =  xh : caminoComun xt yt
+        | otherwise = []

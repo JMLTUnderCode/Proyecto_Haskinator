@@ -95,6 +95,7 @@ cargarOraculo fileName = do
     let availableContent = unsafePerformIO (readFile fileName)
     read availableContent :: Oraculo
 
+
 main :: IO ()
 main = do
     header
@@ -177,6 +178,13 @@ cliente oraculo = do
             pred1 <- getLine
             putStrLn "Indica la segunda cadena"
             pred2 <- getLine
+
+            case preguntaCrucial oraculo pred1 pred2 of
+                Just (pregunta, opcion1, opcion2) -> do
+                    putStrLn $ "Pregunta: '" ++ pregunta ++ "'"
+                    putStrLn $ "La opción '" ++ opcion1 ++ "' lleva a '" ++ pred1 ++ "'"
+                    putStrLn $ "La opción '" ++ opcion2 ++ "' lleva a '" ++ pred2 ++ "'"
+                Nothing -> putStrLn "No se encontró una pregunta crucial."
 
             cliente oraculo
 
