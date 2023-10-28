@@ -18,18 +18,21 @@ esPregunta (Prediccion _) = False
 -- diga que una prediccion dada es incorrecta.
 actualizarOraculo :: (String, Oraculo) -> Oraculo -> Oraculo -> Oraculo
 actualizarOraculo tuple toBeUpdate oracle = do
-    let mapToList = Map.toList $ opciones oracle
-    if tuple `elem` mapToList then do
-        let updatingOptions =  Map.insert (fst tuple) toBeUpdate $ opciones oracle
-        let mainQuestion = pregunta oracle
-        Pregunta mainQuestion updatingOptions
-        else do
-            let valuesFromOptions = Map.elems $ opciones oracle
-            let updatingOraculo = map (\x -> if esPregunta x then actualizarOraculo tuple toBeUpdate x else x) valuesFromOptions
-            let updatedOptions = Map.keys $ opciones oracle
-            let newOracleOptions = zip updatedOptions updatingOraculo
-            let firstQuestion = pregunta oracle
-            Pregunta firstQuestion $ Map.fromList newOracleOptions
+    if esPregunta oracle then do
+        let mapToList = Map.toList $ opciones oracle
+        if tuple `elem` mapToList then do
+            let updatingOptions =  Map.insert (fst tuple) toBeUpdate $ opciones oracle
+            let mainQuestion = pregunta oracle
+            Pregunta mainQuestion updatingOptions
+            else do
+                let valuesFromOptions = Map.elems $ opciones oracle
+                let updatingOraculo = map (\x -> if esPregunta x then actualizarOraculo tuple toBeUpdate x else x) valuesFromOptions
+                let updatedOptions = Map.keys $ opciones oracle
+                let newOracleOptions = zip updatedOptions updatingOraculo
+                let firstQuestion = pregunta oracle
+                Pregunta firstQuestion $ Map.fromList newOracleOptions
+        else
+            toBeUpdate
 
 -- Funcion encargada de actualizar el oraculo principal para el caso de que el usuario
 -- indique "Ninguna" de las opciones propuestas a una pregunta.
