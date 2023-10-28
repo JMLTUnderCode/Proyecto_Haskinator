@@ -3,17 +3,19 @@ import Oraculo
 import System.IO
 import qualified Data.Map as Map
 import System.IO.Unsafe (unsafePerformIO)
-import Data.List (isInfixOf)
+import Data.List (isInfixOf, nub)
 import Data.Maybe (fromJust)
 import Data.Either
 import Data.Char
 import System.Directory
 
-hasRepeatPredictions :: [Oraculo] -> Bool
-hasRepeatPredictions [] = False
-hasRepeatPredictions [h] = False
-hasRepeatPredictions (h:t) | h `elem` t = True
-                           | otherwise = hasRepeatPredictions t
+hasRepeatPredictions :: Oraculo -> Bool
+hasRepeatPredictions (Prediccion _) = False
+hasRepeatPredictions orac = hasDuplicates $ obtenerPredicciones orac
+
+-- Funcion generica que determina si hay elementos repetidos en una lista de elementos comparables.
+hasDuplicates :: Eq a => [a] -> Bool
+hasDuplicates lista = length (nub lista) /= length lista
 
 obtenerPredicciones :: Oraculo -> [String]
 obtenerPredicciones (Prediccion pred) = [pred]
@@ -233,7 +235,7 @@ cliente oraculo predictionList = do
             else do
                 let newOraculo = cargarOraculo fileName
                 let newPredictionList = map (\x -> read x :: Oraculo) $ obtenerPredicciones newOraculo
-                if hasRepeatPredictions newPredictionList then do
+                if hasRepeatPredictions newOraculo then do
                     putStrLn $ "El archivo "++ fileName ++ " tiene predicciones repetidas."
                     cliente oraculo predictionList
                     else do
