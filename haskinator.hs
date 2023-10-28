@@ -95,7 +95,6 @@ cargarOraculo fileName = do
     let availableContent = unsafePerformIO (readFile fileName)
     read availableContent :: Oraculo
 
-
 main :: IO ()
 main = do
     header
@@ -165,13 +164,13 @@ cliente oraculo = do
             let fileName = if ".txt" `isInfixOf` inputUser then inputUser else inputUser++".txt"
 
             -- Verificando que el archivo exista.
-            if not (unsafePerformIO (doesFileExist $ "./" ++ fileName)) then
+            if not (unsafePerformIO (doesFileExist $ "./" ++ fileName)) then do
                 putStrLn $ "El nombre '" ++ fileName ++ "' no existe o no esta asociado a un archivo .txt."
-                else do
-                    let newOraculo = cargarOraculo fileName
-                    putStrLn $ "Información cargada desde el archivo " ++ fileName
-                    cliente newOraculo
-            cliente oraculo
+                cliente oraculo
+            else do
+                let newOraculo = cargarOraculo fileName
+                putStrLn $ "Información cargada desde el archivo " ++ fileName
+                cliente newOraculo
             
         "5" -> do -- Pregunta crucial
             putStrLn "Indica la primera cadena"
@@ -179,21 +178,12 @@ cliente oraculo = do
             putStrLn "Indica la segunda cadena"
             pred2 <- getLine
 
-            case preguntaCrucial oraculo pred1 pred2 of
-                Just (pregunta, opcion1, opcion2) -> do
-                    putStrLn $ "Pregunta: '" ++ pregunta ++ "'"
-                    putStrLn $ "La opción '" ++ opcion1 ++ "' lleva a '" ++ pred1 ++ "'"
-                    putStrLn $ "La opción '" ++ opcion2 ++ "' lleva a '" ++ pred2 ++ "'"
-                Nothing -> putStrLn "No se encontró una pregunta crucial."
-
             cliente oraculo
 
         "6" -> do -- Estadísticas
-            let (omin, omax, oavg) = obtenerEstadisticas oraculo
-
-            putStrLn $ "min: " ++ show omin 
-                ++ "        max: " ++ show omax 
-                ++ "        avg: " ++ show oavg
+            putStrLn "Mínimo: ~"
+            putStrLn "Máximo: ~"
+            putStrLn "Promedio: ~"
 
             cliente oraculo
 
