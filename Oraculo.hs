@@ -17,6 +17,7 @@ module Oraculo (
     import Data.Maybe (fromJust)
     import Data.List.Split (splitOn)
     import Data.List (isInfixOf)
+    import Data.Text (strip, pack, unpack)
 
 --------------------------------  TIPOS DE DATOS  ---------------------------------
 
@@ -71,10 +72,10 @@ module Oraculo (
                 let elements = tail splitedTree
 
                 -- Lista de respuestas para cada elemento restante.
-                let answerList = map (takeWhile (/= ':')) elements 
+                let answerList = map (unpack . strip . pack . takeWhile (/= ':')) elements 
 
                 -- Lista de oraculos a traducir por cada elemento restante. 
-                let oracleList = map (drop 2 . dropWhile (/= ':')) elements
+                let oracleList = map (unpack . strip . pack . drop 2 . dropWhile (/= ':')) elements
 
                 -- Lista de oraculos traducidos de las cuales se realizan llamadas recursivas
                 -- por cada subrama dada en la lista de oraculos disponibles.
