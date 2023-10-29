@@ -149,6 +149,9 @@ preguntaCrucial oraculo pred1 pred2 = do
         let c2Diff = drop l c2
         Just (fst $ head c1Diff, snd $ head c1Diff, snd $ head c2Diff)
 
+-- Funcion que dadas dos cadenas (listas de preguntas hasta una predicción),
+-- devuelve el segmento común entre ellas partiendo desde el inicio de ambas
+-- listas
 caminoComun :: [(String, String)] -> [(String, String)] -> [(String, String)]
 caminoComun [] _ = []
 caminoComun _ [] = []
