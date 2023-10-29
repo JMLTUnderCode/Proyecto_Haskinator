@@ -4,7 +4,7 @@ import System.IO
 import qualified Data.Map as Map
 import System.IO.Unsafe (unsafePerformIO)
 import Data.List (isInfixOf, nub)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, isJust)
 import Data.Either
 import Data.Char
 import System.Directory
@@ -85,25 +85,29 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                 putStr "   Haskinator : ¡Me cago en la ostia tio! Cual es la puñetera respuesta?\n   Usuario    : "
                 expectedAnswer <- getLine
 
-                putStr $ "   Haskinator : Que pregunta distingue a '"++ expectedAnswer ++"' de las otras opciones?\n   Usuario    : "
-                distinguishedQuestion <- getLine
-
-                let questionPrompt = "   Haskinator : Cual es la respuesta a '"++ distinguishedQuestion ++"' para '"
-                putStr $ questionPrompt ++ expectedAnswer ++ "'?\n   Usuario    : "
-                optionForExpectedAnswer <- getLine
-                
-                -- MAL PRINTEO (SOLVENTAR)
-                putStr $ questionPrompt ++ prediction
-                putStr "'?\n   Usuario    : "
-                optionForGivenPrediction <- getLine
-
-                let newQuestion = Pregunta distinguishedQuestion (Map.fromList [(optionForExpectedAnswer, Prediccion expectedAnswer), (optionForGivenPrediction, Prediccion prediction)])
-                let updatedOraculo = actualizarOraculo (lastOption, Prediccion prediction) newQuestion originalOracle
-                putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
-                return updatedOraculo
+                if isJust (obtenerCadena originalOracle expectedAnswer) then do
+                    putStrLn $  "   Haskinator : ¡¿Pero qué me has contao chaval?! La predicción " ++ expectedAnswer ++ " ya existe."
+                    return originalOracle
                 else do
-                    putStrLn $ "   Haskinator : Que dices chaval! La opcion '" ++ inputUser ++ "' no es valida."
-                    predecir (Prediccion prediction) originalOracle lastOption
+                    putStr $ "   Haskinator : Que pregunta distingue a '"++ expectedAnswer ++"' de las otras opciones?\n   Usuario    : "
+                    distinguishedQuestion <- getLine
+
+                    let questionPrompt = "   Haskinator : Cual es la respuesta a '"++ distinguishedQuestion ++"' para '"
+                    putStr $ questionPrompt ++ expectedAnswer ++ "'?\n   Usuario    : "
+                    optionForExpectedAnswer <- getLine
+                    
+                    -- MAL PRINTEO (SOLVENTAR)
+                    putStr $ questionPrompt ++ prediction
+                    putStr "'?\n   Usuario    : "
+                    optionForGivenPrediction <- getLine
+
+                    let newQuestion = Pregunta distinguishedQuestion (Map.fromList [(optionForExpectedAnswer, Prediccion expectedAnswer), (optionForGivenPrediction, Prediccion prediction)])
+                    let updatedOraculo = actualizarOraculo (lastOption, Prediccion prediction) newQuestion originalOracle
+                    putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
+                    return updatedOraculo
+            else do
+                putStrLn $ "   Haskinator : Que dices chaval! La opcion '" ++ inputUser ++ "' no es valida."
+                predecir (Prediccion prediction) originalOracle lastOption
 
 -- Mostrar un Oraculo en version Pregunta, se muestra la misma y las opciones que conllevan esa pregunta.
 predecir oracle originalOracle lastOption = do
@@ -279,52 +283,52 @@ header = do
 
 bighead :: IO ()
 bighead = do
-    putStr("                                                                   ;.      \n")
-    putStr("                                                                   ;x.     \n")
-    putStr("                                                                   ;X+.    \n")
-    putStr("                                                                 .;XXX;    \n")
-    putStr("                                . . . . .                    .:+XXXXXX:    \n")
-    putStr("                     .:;;;;;::::...              .:;      .+XXXXXXXX;.     \n")
-    putStr("              .:;;;;;:::::::::                      ::.  .+xXXXXX+:.       \n")
-    putStr("             :::::::::;;:::::                         :;:.+xXX+:           \n")
-    putStr("            ;:::::;::::::;;::::                         .;++X;             \n")
-    putStr("           :::::;::::::::::;+;:::..                       .;+:             \n")
-    putStr("          .;:::;::::::::::.  :++;::::;;;;;;;;;;::::::::..    :;:           \n")
-    putStr("          ::::;:::::::;;;;;:.  :++;:::::                ...:;;;;;:.        \n")
-    putStr("         .;::;::::::+;:.:..:;    ;;;;:::.                         :;.      \n")
-    putStr("         .:::::::::;;:.:;;:.::    :+:;:::.                         .:;.    \n")
-    putStr("         :::;::::::;;:::;:..;:     .;;:;:::.                         .;:   \n")
-    putStr("         :::::::::::+;;;;+::;        :;:;;::                           ::  \n")
-    putStr("         ::;::::::::::;:::;:          :;::+::.                          :: \n")
-    putStr("         .;;::::::...........:.::::... :;::;;:.                          ;.\n")
-    putStr("          .;::::::::::;;;;;;;;;;::::::;;+++;+;:::...                     :.\n")
-    putStr("           .;::;;+;;::;::;;;;..............::;;++;::::.                  ;.\n")
-    putStr("            .+X;;................................:;;;:::.               .;.\n")
-    putStr("             .x+:..:;++++;;;;;;;;;;;;:...........:; :;:::.              :;.\n")
-    putStr("              .x:................................;+: .:;::.             ;;.\n")
-    putStr("               ;:::;+x+:.......:+XXx++++X:.........;:. .::.            .;: \n")
-    putStr("              .+;+X$x;..:......:...................;: .  ..:::.        .;: \n")
-    putStr("              .X++x$XX+........+Xx+&&X+;::.........;;.     .+..::;;;;::;;  \n")
-    putStr("              :;....++.........:X+.+Xxx+;;.........:+;. :+x;:;.  :;:::;;.  \n")
-    putStr("              ;:......;;.........;:..................:x+:....:;  :;  .;:   \n")
-    putStr("              ;:.....:+.......................................; .;. .;:    \n")
-    putStr("              ;:.....+:...............................::++:...;:;. .:.     \n")
-    putStr("              ;:....:+...................................:;...;; .;:       \n")
-    putStr("              ;:....x.......:;;..........................;:..;++;:         \n")
-    putStr("              :+....;++;:;;;;+:+...............:......;++;..;:.            \n")
-    putStr("               +...:;..........:;..............+:....;;...:;:              \n")
-    putStr("               ;:..:;...........:;............+::...;x+X$;.                \n")
-    putStr("               :;..:;............::.....................;:                 \n")
-    putStr("                +..:+++++++++++++:......................::                 \n")
-    putStr("                .;.................:............++...:..:;                 \n")
-    putStr("                 :;....;:......................X;...+;..+                  \n")
-    putStr("                  :;..:+:+;:.................:+....:::;+.                  \n")
-    putStr("                   ::..;$$$X:...............;+...::;;:                     \n")
-    putStr("                    ;;:X$$$$;............::X:.;+.                          \n")
-    putStr("                     .x$$$$$X.........:;+;:..                              \n")
-    putStr("                      +$Xxx+;;+;;::.                                       \n")
-    putStr("                      :$$;                                                 \n")
-    putStr("                   :$$$$$X:                                                \n")
-    putStr("                   ;$::::.                                                 \n")
-    putStr("                   :X:                                                     \n")
-    putStr("                     ;.                                                    \n")
+    putStrLn "                                                                   ;.      "
+    putStrLn "                                                                   ;x.     "
+    putStrLn "                                                                   ;X+.    "
+    putStrLn "                                                                 .;XXX;    "
+    putStrLn "                                . . . . .                    .:+XXXXXX:    "
+    putStrLn "                     .:;;;;;::::...              .:;      .+XXXXXXXX;.     "
+    putStrLn "              .:;;;;;:::::::::                      ::.  .+xXXXXX+:.       "
+    putStrLn "             :::::::::;;:::::                         :;:.+xXX+:           "
+    putStrLn "            ;:::::;::::::;;::::                         .;++X;             "
+    putStrLn "           :::::;::::::::::;+;:::..                       .;+:             "
+    putStrLn "          .;:::;::::::::::.  :++;::::;;;;;;;;;;::::::::..    :;:           "
+    putStrLn "          ::::;:::::::;;;;;:.  :++;:::::                ...:;;;;;:.        "
+    putStrLn "         .;::;::::::+;:.:..:;    ;;;;:::.                         :;.      "
+    putStrLn "         .:::::::::;;:.:;;:.::    :+:;:::.                         .:;.    "
+    putStrLn "         :::;::::::;;:::;:..;:     .;;:;:::.                         .;:   "
+    putStrLn "         :::::::::::+;;;;+::;        :;:;;::                           ::  "
+    putStrLn "         ::;::::::::::;:::;:          :;::+::.                          :: "
+    putStrLn "         .;;::::::...........:.::::... :;::;;:.                          ;."
+    putStrLn "          .;::::::::::;;;;;;;;;;::::::;;+++;+;:::...                     :."
+    putStrLn "           .;::;;+;;::;::;;;;..............::;;++;::::.                  ;."
+    putStrLn "            .+X;;................................:;;;:::.               .;."
+    putStrLn "             .x+:..:;++++;;;;;;;;;;;;:...........:; :;:::.              :;."
+    putStrLn "              .x:................................;+: .:;::.             ;;."
+    putStrLn "               ;:::;+x+:.......:+XXx++++X:.........;:. .::.            .;: "
+    putStrLn "              .+;+X$x;..:......:...................;: .  ..:::.        .;: "
+    putStrLn "              .X++x$XX+........+Xx+&&X+;::.........;;.     .+..::;;;;::;;  "
+    putStrLn "              :;....++.........:X+.+Xxx+;;.........:+;. :+x;:;.  :;:::;;.  "
+    putStrLn "              ;:......;;.........;:..................:x+:....:;  :;  .;:   "
+    putStrLn "              ;:.....:+.......................................; .;. .;:    "
+    putStrLn "              ;:.....+:...............................::++:...;:;. .:.     "
+    putStrLn "              ;:....:+...................................:;...;; .;:       "
+    putStrLn "              ;:....x.......:;;..........................;:..;++;:         "
+    putStrLn "              :+....;++;:;;;;+:+...............:......;++;..;:.            "
+    putStrLn "               +...:;..........:;..............+:....;;...:;:              "
+    putStrLn "               ;:..:;...........:;............+::...;x+X$;.                "
+    putStrLn "               :;..:;............::.....................;:                 "
+    putStrLn "                +..:+++++++++++++:......................::                 "
+    putStrLn "                .;.................:............++...:..:;                 "
+    putStrLn "                 :;....;:......................X;...+;..+                  "
+    putStrLn "                  :;..:+:+;:.................:+....:::;+.                  "
+    putStrLn "                   ::..;$$$X:...............;+...::;;:                     "
+    putStrLn "                    ;;:X$$$$;............::X:.;+.                          "
+    putStrLn "                     .x$$$$$X.........:;+;:..                              "
+    putStrLn "                      +$Xxx+;;+;;::.                                       "
+    putStrLn "                      :$$;                                                 "
+    putStrLn "                   :$$$$$X:                                                "
+    putStrLn "                   ;$::::.                                                 "
+    putStrLn "                   :X:                                                     "
+    putStrLn "                     ;.                                                    "
