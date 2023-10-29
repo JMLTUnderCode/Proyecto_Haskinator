@@ -90,18 +90,22 @@ module Oraculo (
 -----------------------------------------------------------------------------------
 -----------------------------  FUNCIONES DE ACCESO  -------------------------------
 
+    -- Funcion que permite obtener la prediccion de un oraculo.
     prediccion :: Oraculo -> String
     prediccion (Prediccion prediction) = prediction
     prediccion (Pregunta _ _) = error "No se puede obtener algo de tipo 'Prediccion' de algo tipo 'Pregunta'." 
 
+    -- Funcion que permite obtener la pregunta de un oraculo.
     pregunta :: Oraculo -> String
     pregunta (Pregunta question _) = question
     pregunta (Prediccion _) =  error "No se puede obtener algo de tipo 'Pregunta' de algo tipo 'Prediccion'."
 
+    -- Funcion que permite obtener las opciones de un oraculo.
     opciones :: Oraculo -> Opciones
     opciones (Pregunta _ options) = options
     opciones (Prediccion _ ) = error "No se pueden obterner opciones a partir de algo tipo 'Prediccion'."
 
+    -- Funcion que permite obtener la respuesta de un oraculo.
     respuesta :: Oraculo -> String -> Oraculo
     respuesta (Pregunta _ options) answer = case
         Map.lookup answer options of
@@ -112,23 +116,14 @@ module Oraculo (
 -----------------------------------------------------------------------------------
 ----------------------------  FUNCIONES DE INSPECCION  ----------------------------
 
+    -- Funcion que permite obtener la cadena de preguntas y respuestas que llevan a una prediccion.
     obtenerCadena :: Oraculo -> String -> Maybe [(String, String)]
     obtenerCadena (Prediccion _) _ = Nothing
     obtenerCadena orac pred
         | pred `notElem` obtenerPredicciones orac = Nothing
         | otherwise = Just $ camino orac pred
 
-    obtenerPredicciones :: Oraculo -> [String]
-    obtenerPredicciones (Prediccion pred) = [pred]
-    obtenerPredicciones (Pregunta _ op) = [pred | (k, v) <- Map.toList op, pred <- obtenerPredicciones v]
-
-    camino :: Oraculo -> String -> [(String, String)]
-    camino (Prediccion _) _ = []
-    camino (Pregunta preg op) pred
-        | pred `notElem` obtenerPredicciones (Pregunta preg op) = []
-        | otherwise = head [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
-        : camino (head [o | o <- Map.elems op, pred `elem` obtenerPredicciones o]) pred
-
+    -- Funcion que permite obtener las estadisticas de un oraculo.
     obtenerEstadisticas :: Oraculo -> (Float, Float, Float)
     obtenerEstadisticas orac = (
         minimum depths,
@@ -137,10 +132,28 @@ module Oraculo (
         ) where
             depths = fromIntegral <$> profundidades orac
 
+
+------------------------------- Funciones de ayuda --------------------------------
+
+    -- Funcion que permite obtener las predicciones de un oraculo como una lista de strings.
+    obtenerPredicciones :: Oraculo -> [String]
+    obtenerPredicciones (Prediccion pred) = [pred]
+    obtenerPredicciones (Pregunta _ op) = [pred | (k, v) <- Map.toList op, pred <- obtenerPredicciones v]
+
+    -- Funcion que dado un oraculo y una prediccion, devuelve la cadena de preguntas y respuestas que llevan a dicha prediccion.
+    camino :: Oraculo -> String -> [(String, String)]
+    camino (Prediccion _) _ = []
+    camino (Pregunta preg op) pred
+        | pred `notElem` obtenerPredicciones (Pregunta preg op) = []
+        | otherwise = head [(preg, key) | (key, value) <- Map.toList op, pred `elem` obtenerPredicciones value]
+        : camino (head [o | o <- Map.elems op, pred `elem` obtenerPredicciones o]) pred
+
+    -- Funcion que dado un oraculo, devuelve una lista con las profundidades de todas las predicciones.
     profundidades :: Oraculo -> [Int]
     profundidades (Prediccion _) = [0]
     profundidades (Pregunta preg op) = map (obtenerProfundidad (Pregunta preg op)) (obtenerPredicciones (Pregunta preg op))
     
+    -- Funcion que dado un oraculo y una prediccion, devuelve la profundidad de dicha prediccion.
     obtenerProfundidad :: Oraculo -> String -> Int
     obtenerProfundidad (Prediccion _) _ = 0
     obtenerProfundidad orac pred
@@ -150,9 +163,11 @@ module Oraculo (
 -----------------------------------------------------------------------------------
 ---------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
 
+    -- Funcion que permite crear un oraculo a partir de una prediccion.
     crearOraculo :: String -> Oraculo
     crearOraculo = Prediccion
 
+    -- Funcion que permite ramificar un oraculo a partir de una lista de opciones y sus respectivos oraculos.
     ramificar :: [String] -> [Oraculo] -> String -> Oraculo
     ramificar [] [] _ = error "No se puede ramificar un oraculo sin opciones"
     ramificar [] _ _ = error "No se puede ramificar un oraculo sin opciones"
