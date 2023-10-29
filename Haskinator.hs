@@ -1,3 +1,5 @@
+module Haskinator (main) where
+    
 -- Importacion de modulo Oraculo y modulos generales para el funcionaimento del programa.
 import Oraculo
 import System.IO
@@ -15,7 +17,6 @@ main :: IO ()
 main = do
     header
     cliente (Prediccion "Yo solo se que no se nada chaval. d:v") [Prediccion "Yo solo se que no se nada chaval. d:v"]
-
 
 cliente :: Oraculo -> [Oraculo] -> IO ()
 cliente oraculo predictionList = do
