@@ -3,11 +3,23 @@ import Oraculo
 import System.IO
 import qualified Data.Map as Map
 import System.IO.Unsafe (unsafePerformIO)
-import Data.List (isInfixOf)
+import Data.List (isInfixOf, nub)
 import Data.Maybe (fromJust)
 import Data.Either
 import Data.Char
 import System.Directory
+
+hasRepeatPredictions :: Oraculo -> Bool
+hasRepeatPredictions (Prediccion _) = False
+hasRepeatPredictions orac = hasDuplicates $ obtenerPredicciones orac
+
+-- Funcion generica que determina si hay elementos repetidos en una lista de elementos comparables.
+hasDuplicates :: Eq a => [a] -> Bool
+hasDuplicates lista = length (nub lista) /= length lista
+
+obtenerPredicciones :: Oraculo -> [String]
+obtenerPredicciones (Prediccion pred) = [pred]
+obtenerPredicciones (Pregunta _ op) = [pred | (k, v) <- Map.toList op, pred <- obtenerPredicciones v]
 
 -- Funcion que determinar si un Oraculo es de tipo Pregunta o es Prediccion.
 esPregunta :: Oraculo -> Bool
@@ -154,10 +166,10 @@ cargarOraculo fileName = do
 main :: IO ()
 main = do
     header
-    cliente (Prediccion "Yo solo se que no se nada chaval. d:v")
+    cliente (Prediccion "Yo solo se que no se nada chaval. d:v") [Prediccion "Yo solo se que no se nada chaval. d:v"]
 
-cliente :: Oraculo -> IO ()
-cliente oraculo = do
+cliente :: Oraculo -> [Oraculo] -> IO ()
+cliente oraculo predictionList = do
     putStrLn "-------------------------------------------------------------------------------"
     putStrLn "                        ***  Selecciona una opción: ***"
     putStrLn "           1. Crear un oráculo nuevo     5. Consultar pregunta crucial"
@@ -174,15 +186,15 @@ cliente oraculo = do
 
             if not ("\t" `isInfixOf` inputUser) then do
                 let newPrediccion = crearOraculo inputUser
-                cliente newPrediccion
+                cliente newPrediccion [newPrediccion]
                 else do
                     putStrLn "   Formato de prediccion incorrecta."
-                    cliente oraculo
+                    cliente oraculo predictionList
 
         "2" -> do -- Predecir
             bighead
             newOraculo <- predecir oraculo oraculo ""
-            cliente newOraculo
+            cliente newOraculo []
 
         "3" -> do -- Persistir
             putStr "   Indica el nombre del archivo: "
@@ -191,7 +203,7 @@ cliente oraculo = do
             persistirOraculo oraculo fileName
 
             putStrLn $ "   Información almacenada en el archivo " ++ fileName
-            cliente oraculo
+            cliente oraculo predictionList
 
         "4" -> do -- Cargar
             putStr "   Indica el nombre del archivo: "
@@ -203,11 +215,16 @@ cliente oraculo = do
             -- Verificando que el archivo exista.
             if not (unsafePerformIO (doesFileExist $ "./" ++ fileName)) then do
                 putStrLn $ "   El nombre '" ++ fileName ++ "' no existe o no esta asociado a un archivo .txt."
-                cliente oraculo
+                cliente oraculo predictionList
             else do
                 let newOraculo = cargarOraculo fileName
-                putStrLn $ "   Información cargada desde el archivo " ++ fileName
-                cliente newOraculo
+                let newPredictionList = map (\x -> read x :: Oraculo) $ obtenerPredicciones newOraculo
+                if hasRepeatPredictions newOraculo then do
+                    putStrLn $ "El archivo "++ fileName ++ " tiene predicciones repetidas."
+                    cliente oraculo predictionList
+                    else do
+                        putStrLn $ "   Información cargada desde el archivo " ++ fileName
+                        cliente newOraculo newPredictionList
             
         "5" -> do -- Pregunta crucial
             putStr "   Indica la primera cadena: "
@@ -222,13 +239,13 @@ cliente oraculo = do
                     putStrLn $ "   La opción '" ++ opcion2 ++ "' lleva a '" ++ pred2 ++ "'"
                 Nothing -> putStrLn "   No se encontró una pregunta crucial."
 
-            cliente oraculo
+            cliente oraculo []
 
         "6" -> do -- Estadísticas
             let (oMin, oMax, oAvg) = obtenerEstadisticas oraculo
             putStrLn $ "   min: " ++ show oMin ++ "       max: " ++ show oMax ++ "      avg: " ++ show oAvg
 
-            cliente oraculo
+            cliente oraculo []
 
         "7" -> do -- Salir
             putStrLn "   Haskinator Españolete. Version 1.0. "
@@ -237,7 +254,7 @@ cliente oraculo = do
 
         _   -> do -- Error
             putStrLn "   Opción inválida."
-            cliente oraculo
+            cliente oraculo []
 
     hFlush stdout
 
