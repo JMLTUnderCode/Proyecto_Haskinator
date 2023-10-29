@@ -1,9 +1,42 @@
-Es un lenguaje de programacion?
-	- Si: A que paradigma pertenece?
-		- Imperativo: A quien pertenece?
-			- Oracle: Java
-			- Microsoft: C#
-			- Google: Go
-		- Funcional: Haskell
-		- Logico: Prolog
-	- No: HTML
+Es un animal?
+	- Si: Es de la sabana?
+		- Si: Es carnivoro o herbivoro?
+			- carnivoro: leon
+			- herbivoro: cebra
+		- No: Es de la granja?
+			- Si: Es grande o pequeño?
+				- grande: vaca
+				- pequeño: gallina
+			- No: Puede ser una mascota?
+				- Si: Es grande o pequeño?
+					- grande: perro
+					- pequeño: Es peludo?
+						- Si: gato
+						- No: Tiene plumas?
+							- Si: loro
+							- No: pez
+				- No: Es un animal marino?
+					- Si: Es grande o pequeño?
+						- grande: ballena
+						- pequeño: Tiene tentaculos?
+							- Si: pulpo
+							- No: delfin
+	- No: Es una comida?
+		- Si: Es dulce o salada?
+			- dulce: es frio o caliente?
+				- frio: helado
+				- caliente: brownie
+			- salada: puede ser una merienda?
+				- Si: doritos
+				- No: Se puede comer frio?
+					- Si: sandwich
+					- No: sopa
+		- No: Es un objeto?
+			- Si: Sirve para construir?
+				- Si: martillo
+				- No: Sirve para cocinar?
+					- Si: olla
+					- No: Sirve para jugar?
+						- Si: pelota
+						- No: lapiz
+			- No: Estas pensando en una persona 

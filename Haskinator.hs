@@ -75,6 +75,8 @@ cliente oracleData = do
                         cliente oracleData
                         else do
                             putStrLn $ "   Información cargada desde el archivo " ++ fileName
+                            putStrLn "   El arbol de conocimiento cargado es:"
+                            print newOracle
                             cliente newOracle
 
         "5" -> do -- Pregunta crucial
@@ -94,7 +96,7 @@ cliente oracleData = do
 
         "6" -> do -- Estadísticas
             let (oMin, oMax, oAvg) = obtenerEstadisticas oracleData
-            putStrLn $ "   min: " ++ show oMin ++ "       max: " ++ show oMax ++ "      avg: " ++ show oAvg
+            putStrLn $ "   min: " ++ takeWhile (/= '.') (show oMin) ++ "       max: " ++ takeWhile (/= '.') (show oMax) ++ "      avg: " ++ show oAvg
 
             cliente oracleData
 
@@ -122,7 +124,7 @@ predecir (Prediccion prediction) originalOracle lastOption = do
     inputUser <- getLine
     -- En caso de que la prediccion sea aceptada.
     if map toUpper inputUser == "SI" then do
-        putStrLn "   ¡Habeis flipao' colores tio! Soy la ostia a que si?"
+        putStrLn "   ¡Habeis flipao' colores tio! Soy la ozztia a que si?"
         return originalOracle
         -- En caso de que la prediccion sea negada.
         else do 
@@ -132,7 +134,7 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                 expectedAnswer <- getLine
 
                 if isJust (obtenerCadena originalOracle expectedAnswer) then do
-                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
+                    putStrLn $  "   Haskinator : ¡Manda cojoneh chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
                     return originalOracle
                 else do
                     putStr $ "   Haskinator : Que pregunta distingue a '"++ expectedAnswer ++"' de las otras opciones?\n   Usuario    : "
@@ -149,10 +151,10 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                     -- Actualizamos el Oraculo con los nuevos datos y predeccion dada.
                     let newQuestion = Pregunta distinguishedQuestion (Map.fromList [(optionForExpectedAnswer, Prediccion expectedAnswer), (optionForGivenPrediction, Prediccion prediction)])
                     let updatedOraculo = actualizarOraculo (lastOption, Prediccion prediction) newQuestion originalOracle
-                    putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
+                    putStrLn "   Graciah chava'! Pero sobre todo agradecido con el de arriba Papa Dio'"
                     return updatedOraculo
             else do
-                putStrLn $ "   Haskinator : Que dices chaval! La opcion '" ++ inputUser ++ "' no es valida."
+                putStrLn $ "   Haskinator : Que dices chava'! La opcion '" ++ inputUser ++ "' no es valida."
                 predecir (Prediccion prediction) originalOracle lastOption
 
 -- En caso de recibir Oraculo de tipo Pregunta se realizan confirmaciones de aceptaciones de
@@ -173,15 +175,19 @@ predecir oracle originalOracle lastOption = do
                 putStr "   Haskinator : ¡Me cago en la ostia tio! Cual es la puñetera respuesta?\n   Usuario    : "
                 expectedAnswer <- getLine
                 if isJust (obtenerCadena originalOracle expectedAnswer) then do
-                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
+                    putStrLn $  "   Haskinator : ¡Manda cojoneh chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
                     return originalOracle
                     else do
                         putStr $ "   Haskinator : " ++ answer ++ "\n   Usuario    : "
                         optionForExpectedAnswer <- getLine
-                        let newPrediction = Prediccion expectedAnswer
-                        let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle
-                        putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
-                        return updatedOraculo
+                        if Map.member optionForExpectedAnswer $ opciones oracle then do
+                            putStrLn $ "   Que dice chava'? Por mis cojoneh, la opcion '" ++ optionForExpectedAnswer ++ "' ya esta."
+                            return originalOracle
+                            else do
+                                let newPrediction = Prediccion expectedAnswer
+                                let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle
+                                putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
+                                return updatedOraculo
                 else do 
                     putStrLn $ "   La opcion '" ++ inputUser ++ "' no existe."
                     predecir oracle originalOracle lastOption
