@@ -116,7 +116,8 @@ module Oraculo (
 -----------------------------------------------------------------------------------
 ----------------------------  FUNCIONES DE INSPECCION  ----------------------------
 
-    -- Funcion que permite obtener la cadena de preguntas y respuestas que llevan a una prediccion.
+    -- Funcion que permite obtener la cadena de preguntas y respuestas que llevan 
+    -- a una prediccion.
     obtenerCadena :: Oraculo -> String -> Maybe [(String, String)]
     obtenerCadena (Prediccion _) _ = Nothing
     obtenerCadena orac pred
@@ -132,8 +133,23 @@ module Oraculo (
         ) where
             depths = fromIntegral <$> profundidades orac
 
+-----------------------------------------------------------------------------------
+---------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
 
-------------------------------- Funciones de ayuda --------------------------------
+    -- Funcion que permite crear un oraculo a partir de una prediccion.
+    crearOraculo :: String -> Oraculo
+    crearOraculo = Prediccion
+
+    -- Funcion que permite ramificar un oraculo a partir de una lista de opciones y sus respectivos oraculos.
+    ramificar :: [String] -> [Oraculo] -> String -> Oraculo
+    ramificar [] [] _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar [] _ _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar _ [] _ = error "No se puede ramificar un oraculo sin opciones"
+    ramificar ops oracls preg = Pregunta preg $ Map.fromList $ zip ops oracls
+
+
+-----------------------------------------------------------------------------------
+------------------------------ FUNCIONES ADICIONALES ------------------------------
 
     -- Funcion que permite obtener las predicciones de un oraculo como una lista de strings.
     obtenerPredicciones :: Oraculo -> [String]
@@ -159,17 +175,3 @@ module Oraculo (
     obtenerProfundidad orac pred
         | pred `notElem` obtenerPredicciones orac = 0
         | otherwise = 1 + maximum (map (`obtenerProfundidad` pred) (Map.elems $ opciones orac))
-
------------------------------------------------------------------------------------
----------------------------  FUNCIONES DE CONSTRUCCION  ---------------------------
-
-    -- Funcion que permite crear un oraculo a partir de una prediccion.
-    crearOraculo :: String -> Oraculo
-    crearOraculo = Prediccion
-
-    -- Funcion que permite ramificar un oraculo a partir de una lista de opciones y sus respectivos oraculos.
-    ramificar :: [String] -> [Oraculo] -> String -> Oraculo
-    ramificar [] [] _ = error "No se puede ramificar un oraculo sin opciones"
-    ramificar [] _ _ = error "No se puede ramificar un oraculo sin opciones"
-    ramificar _ [] _ = error "No se puede ramificar un oraculo sin opciones"
-    ramificar ops oracls preg = Pregunta preg $ Map.fromList $ zip ops oracls

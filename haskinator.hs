@@ -41,7 +41,7 @@ cliente oraculo predictionList = do
                     cliente oraculo predictionList
 
         "2" -> do -- Predecir
-            bighead
+            bigHead
             newOraculo <- predecir oraculo oraculo ""
             cliente newOraculo []
 
@@ -103,6 +103,7 @@ cliente oraculo predictionList = do
 
         _   -> do -- Error
             putStrLn "   Opción inválida."
+
             cliente oraculo []
 
     hFlush stdout
@@ -110,20 +111,26 @@ cliente oraculo predictionList = do
 -- Funcion que se encarga de realizar el proceso de prediccion. Muestra las interacciones con
 -- el usuario, solicita datos y realiza llamados a funciones de actualizacion de oraculos.
 predecir :: Oraculo -> Oraculo -> String -> IO Oraculo
+
+-- En caso de recibir Prediccion se realiza la comprobacion.
 predecir (Prediccion prediction) originalOracle lastOption = do
     hFlush stdout
+    -- Verificamos aceptacion de prediccion.
     putStr $ "   Haskinator : Prediccion: " ++ prediction ++ "\n                 Si / No" ++ "\n   Usuario    : "
     inputUser <- getLine
+    -- En caso de que la prediccion sea aceptada.
     if map toUpper inputUser == "SI" then do
         putStrLn "   ¡Habeis flipao' colores tio! Soy la ostia a que si?"
         return originalOracle
+        -- En caso de que la prediccion sea negada.
         else do 
             if map toUpper inputUser == "NO" then do
+                -- Solicitamos todos los datos pertinentes para una nueva prediccion.
                 putStr "   Haskinator : ¡Me cago en la ostia tio! Cual es la puñetera respuesta?\n   Usuario    : "
                 expectedAnswer <- getLine
 
                 if isJust (obtenerCadena originalOracle expectedAnswer) then do
-                    putStrLn $  "   Haskinator : ¡¿Pero qué me has contao chaval?! La predicción " ++ expectedAnswer ++ " ya existe."
+                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción " ++ expectedAnswer ++ " ya existe."
                     return originalOracle
                 else do
                     putStr $ "   Haskinator : Que pregunta distingue a '"++ expectedAnswer ++"' de las otras opciones?\n   Usuario    : "
@@ -133,11 +140,11 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                     putStr $ questionPrompt ++ expectedAnswer ++ "'?\n   Usuario    : "
                     optionForExpectedAnswer <- getLine
                     
-                    -- MAL PRINTEO (SOLVENTAR)
                     putStr $ questionPrompt ++ prediction
                     putStr "'?\n   Usuario    : "
                     optionForGivenPrediction <- getLine
 
+                    -- Actualizamos el Oraculo con los nuevos datos y predeccion dada.
                     let newQuestion = Pregunta distinguishedQuestion (Map.fromList [(optionForExpectedAnswer, Prediccion expectedAnswer), (optionForGivenPrediction, Prediccion prediction)])
                     let updatedOraculo = actualizarOraculo (lastOption, Prediccion prediction) newQuestion originalOracle
                     putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
@@ -146,7 +153,8 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                 putStrLn $ "   Haskinator : Que dices chaval! La opcion '" ++ inputUser ++ "' no es valida."
                 predecir (Prediccion prediction) originalOracle lastOption
 
--- Mostrar un Oraculo en version Pregunta, se muestra la misma y las opciones que conllevan esa pregunta.
+-- En caso de recibir Oraculo de tipo Pregunta se realizan confirmaciones de aceptaciones de
+-- opciones como tambien realizar el proceso de recorrido del arbol.
 predecir oracle originalOracle lastOption = do
     let options = opciones oracle
     let answer = pregunta oracle
@@ -197,8 +205,6 @@ preguntaCrucial oraculo pred1 pred2 = do
         let c2Diff = drop l c2
         Just (fst $ head c1Diff, snd $ head c1Diff, snd $ head c2Diff)
 
-
-
 ---------------------------------------------------------------------------------------
 -----------------------------  FUNCIONES AUXILIARES -----------------------------------
 
@@ -227,16 +233,22 @@ actualizarOraculo :: (String, Oraculo) -> Oraculo -> Oraculo -> Oraculo
 actualizarOraculo tuple toBeUpdate oracle = do
     if esPregunta oracle then do
         let mapToList = Map.toList $ opciones oracle
-        if tuple `elem` mapToList then do
+        if tuple `elem` mapToList then do -- Caso cuando encontramos el nivel a actualizar.
             let updatingOptions =  Map.insert (fst tuple) toBeUpdate $ opciones oracle
             let mainQuestion = pregunta oracle
             Pregunta mainQuestion updatingOptions
-            else do
+            else do -- Realizando proceso de busqueda de en los niveles del arbol.
+                -- Elementos del oraculo actual.
                 let valuesFromOptions = Map.elems $ opciones oracle
+                -- Actualizacion recursiva para cada elementos de tipo Pregunta Oraculo
                 let updatingOraculo = map (\x -> if esPregunta x then actualizarOraculo tuple toBeUpdate x else x) valuesFromOptions
+                -- Extrayendo las llaves del mapa actual asociado al oraculo.
                 let updatedOptions = Map.keys $ opciones oracle
+                -- Haciendo el match de llaves con elementos ya actualizado.
                 let newOracleOptions = zip updatedOptions updatingOraculo
+                -- Extraccion de la pregunta nodo principal.
                 let firstQuestion = pregunta oracle
+                -- Creacion y actualizacion del oraculo para la nueva rama agregada.
                 Pregunta firstQuestion $ Map.fromList newOracleOptions
         else
             toBeUpdate
@@ -246,18 +258,21 @@ actualizarOraculo tuple toBeUpdate oracle = do
 actualizarOraculo' :: (String, Oraculo) -> String -> Oraculo -> Oraculo
 actualizarOraculo' toBeUpdate question oracle = do
     let mapToList = Map.toList $ opciones oracle
-    if question == pregunta oracle then do
+    if question == pregunta oracle then do -- Caso cuando tenemos la pregunta inicial.
         let newOracle = uncurry Map.insert toBeUpdate $ opciones oracle
         Pregunta question newOracle
-        else do
+        else do -- Buscamos recursivamente.
+            -- Buscamos los pares ordenados cuya segunda posicion sea Oraculo Pregunta.
             let elementTarget = filter (\(y, x) -> esPregunta x && question == pregunta x) mapToList
             if not (null elementTarget) then do
+                -- Realizamos la actualicion del nuevo oraculo.
                 let optionUpdate = opciones $ snd (head elementTarget)
                 let newInnerOracle = uncurry Map.insert toBeUpdate optionUpdate
                 let newOracle = Map.insert (fst (head elementTarget)) (Pregunta question newInnerOracle) $ opciones oracle
                 let mainQuestion = pregunta oracle
                 Pregunta mainQuestion newOracle
                 else do
+                    -- Realizamos la llamada recursiva para actualizas posteriormente el oraculo.
                     let elementsOracle = Map.elems $ opciones oracle
                     let updatingOracle = map (\x -> if esPregunta x then actualizarOraculo' toBeUpdate question x else x) elementsOracle
                     let updatedOptions = Map.keys $ opciones oracle
@@ -265,9 +280,8 @@ actualizarOraculo' toBeUpdate question oracle = do
                     let firstQuestion = pregunta oracle
                     Pregunta firstQuestion $ Map.fromList newOracleOptions
 
--- Funcion que dadas dos cadenas (listas de preguntas hasta una predicción),
--- devuelve el segmento común entre ellas partiendo desde el inicio de ambas
--- listas
+-- Funcion que dadas dos cadenas (listas de preguntas hasta una predicción), devuelve 
+-- el segmento común entre ellas partiendo desde el inicio de ambas listas
 caminoComun :: [(String, String)] -> [(String, String)] -> [(String, String)]
 caminoComun [] _ = []
 caminoComun _ [] = []
@@ -275,10 +289,8 @@ caminoComun (xh : xt) (yh : yt)
     | xh == yh =  xh : caminoComun xt yt
     | otherwise = []
 
-
-
 ---------------------------------------------------------------------------------------
--------------------- IMPRESIONES PARA EL CLIENTE --------------------------------------
+--------------------------- IMPRESIONES PARA EL CLIENTE -------------------------------
 header :: IO ()
 header = do
     putStrLn "\n"
@@ -296,9 +308,8 @@ header = do
     putStrLn "   18-10938 | Astrid Alvarado"
     putStrLn "   15-11377 | Carlos Sivira"
 
-
-bighead :: IO ()
-bighead = do
+bigHead :: IO ()
+bigHead = do
     putStrLn "                                                                   ;.      "
     putStrLn "                                                                   ;x.     "
     putStrLn "                                                                   ;X+.    "
