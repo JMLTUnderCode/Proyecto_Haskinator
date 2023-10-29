@@ -16,10 +16,10 @@ import System.Directory
 main :: IO ()
 main = do
     header
-    cliente (Prediccion "Yo solo se que no se nada chaval. d:v") [Prediccion "Yo solo se que no se nada chaval. d:v"]
+    cliente (Prediccion "Yo solo se que no se nada chaval. d:v")
 
-cliente :: Oraculo -> [Oraculo] -> IO ()
-cliente oraculo predictionList = do
+cliente :: Oraculo -> IO ()
+cliente oracleData = do
     putStrLn "-------------------------------------------------------------------------------"
     putStrLn "                        ***  Selecciona una opción: ***"
     putStrLn "           1. Crear un oráculo nuevo     5. Consultar pregunta crucial"
@@ -36,24 +36,24 @@ cliente oraculo predictionList = do
 
             if not ("\t" `isInfixOf` inputUser) then do
                 let newPrediccion = crearOraculo inputUser
-                cliente newPrediccion [newPrediccion]
+                cliente newPrediccion
                 else do
-                    putStrLn "   Formato de prediccion incorrecta."
-                    cliente oraculo predictionList
+                    putStrLn "   Error: Formato de prediccion incorrecta."
+                    cliente oracleData
 
         "2" -> do -- Predecir
             bigHead
-            newOraculo <- predecir oraculo oraculo ""
-            cliente newOraculo []
+            newOraculo <- predecir oracleData oracleData ""
+            cliente newOraculo
 
         "3" -> do -- Persistir
             putStr "   Indica el nombre del archivo: "
             inputUser <- getLine
             let fileName = if ".txt" `isInfixOf` inputUser then inputUser else inputUser++".txt"
-            persistirOraculo oraculo fileName
+            persistirOraculo oracleData fileName
 
             putStrLn $ "   Información almacenada en el archivo " ++ fileName
-            cliente oraculo predictionList
+            cliente oracleData 
 
         "4" -> do -- Cargar
             putStr "   Indica el nombre del archivo: "
@@ -64,38 +64,39 @@ cliente oraculo predictionList = do
 
             -- Verificando que el archivo exista.
             if not (unsafePerformIO (doesFileExist $ "./" ++ fileName)) then do
-                putStrLn $ "   El nombre '" ++ fileName ++ "' no existe o no esta asociado a un archivo .txt."
-                cliente oraculo predictionList
-            else do
-                let newOraculo = cargarOraculo fileName
-                let newPredictionList = map (\x -> read x :: Oraculo) $ obtenerPredicciones newOraculo
-                if hasRepeatPredictions newOraculo then do
-                    putStrLn $ "El archivo "++ fileName ++ " tiene predicciones repetidas."
-                    cliente oraculo predictionList
-                    else do
-                        putStrLn $ "   Información cargada desde el archivo " ++ fileName
-                        cliente newOraculo newPredictionList
-            
+                putStrLn $ "   Error: El nombre '" ++ fileName ++ "' no existe o no esta asociado a un archivo .txt."
+                cliente oracleData 
+                else do
+                    let newOracle = cargarOraculo fileName
+                    -- Verificamos que no existen predicciones repetidas.
+                    if hasRepeatPredictions newOracle then do
+                        putStrLn "   Error: Este arbol de conocimiento posee predicciones repetidas."
+                        putStrLn "          Asegurese de que solo existe una prediccion una unica vez."
+                        cliente oracleData
+                        else do
+                            putStrLn $ "   Información cargada desde el archivo " ++ fileName
+                            cliente newOracle
+
         "5" -> do -- Pregunta crucial
             putStr "   Indica la primera cadena: "
             pred1 <- getLine
             putStr "   Indica la segunda cadena: "
             pred2 <- getLine
 
-            case preguntaCrucial oraculo pred1 pred2 of
+            case preguntaCrucial oracleData pred1 pred2 of
                 Just (pregunta, opcion1, opcion2) -> do
                     putStrLn $ "   Pregunta: '" ++ pregunta ++ "'"
                     putStrLn $ "   La opción '" ++ opcion1 ++ "' lleva a '" ++ pred1 ++ "'"
                     putStrLn $ "   La opción '" ++ opcion2 ++ "' lleva a '" ++ pred2 ++ "'"
-                Nothing -> putStrLn "   No se encontró una pregunta crucial."
+                Nothing -> putStrLn "   Error: No se encontró una pregunta crucial."
 
-            cliente oraculo []
+            cliente oracleData
 
         "6" -> do -- Estadísticas
-            let (oMin, oMax, oAvg) = obtenerEstadisticas oraculo
+            let (oMin, oMax, oAvg) = obtenerEstadisticas oracleData
             putStrLn $ "   min: " ++ show oMin ++ "       max: " ++ show oMax ++ "      avg: " ++ show oAvg
 
-            cliente oraculo []
+            cliente oracleData
 
         "7" -> do -- Salir
             putStrLn "   Haskinator Españolete. Version 1.0. "
@@ -103,9 +104,9 @@ cliente oraculo predictionList = do
             return ()
 
         _   -> do -- Error
-            putStrLn "   Opción inválida."
+            putStrLn "   Error: Opción inválida."
 
-            cliente oraculo []
+            cliente oracleData
 
     hFlush stdout
 
@@ -131,7 +132,7 @@ predecir (Prediccion prediction) originalOracle lastOption = do
                 expectedAnswer <- getLine
 
                 if isJust (obtenerCadena originalOracle expectedAnswer) then do
-                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción " ++ expectedAnswer ++ " ya existe."
+                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
                     return originalOracle
                 else do
                     putStr $ "   Haskinator : Que pregunta distingue a '"++ expectedAnswer ++"' de las otras opciones?\n   Usuario    : "
@@ -171,12 +172,16 @@ predecir oracle originalOracle lastOption = do
             if map toUpper inputUser == "NINGUNA" then do
                 putStr "   Haskinator : ¡Me cago en la ostia tio! Cual es la puñetera respuesta?\n   Usuario    : "
                 expectedAnswer <- getLine
-                putStr $ "   Haskinator : " ++ answer ++ "\n   Usuario    : "
-                optionForExpectedAnswer <- getLine
-                let newPrediction = Prediccion expectedAnswer
-                let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle
-                putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
-                return updatedOraculo
+                if isJust (obtenerCadena originalOracle expectedAnswer) then do
+                    putStrLn $  "   Haskinator : ¡Manda cojones chavalillo! La predicción '" ++ expectedAnswer ++ "' ya existe."
+                    return originalOracle
+                    else do
+                        putStr $ "   Haskinator : " ++ answer ++ "\n   Usuario    : "
+                        optionForExpectedAnswer <- getLine
+                        let newPrediction = Prediccion expectedAnswer
+                        let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle
+                        putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
+                        return updatedOraculo
                 else do 
                     putStrLn $ "   La opcion '" ++ inputUser ++ "' no existe."
                     predecir oracle originalOracle lastOption
