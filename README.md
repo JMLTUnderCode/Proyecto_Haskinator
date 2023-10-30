@@ -105,6 +105,7 @@ $ mkdir -p build && ghc -odir build -hidir build -o build/haskinator haskinator.
         - `obtenerProfundidad :: Oraculo -> String -> Int`  
             Función que dado un `Oraculo` y una predicción (como una cadena de caracteres), devuelve la profundidad de dicha predicción
 ### Haskinator.hs
+El módulo `Haskinator` mantiene la interacción con el usuario y `Oraculo`. La función `main` emplea dos funciones auxiliares `header`, que muestra en pantalla el título del programa y los integrantes de este proyecto; y `cliente`, el cual se compone de:
 - #### Crear nuevo oraculo `(1)`
     Para esta funcionalidad se utilizó la función `crearOraculo` del módulo `Oraculo`. Esta opción es activada al ingresar el número `1`
 - #### Predecir `(2)`
@@ -161,3 +162,6 @@ $ mkdir -p build && ghc -odir build -hidir build -o build/haskinator haskinator.
     Para esta funcionalidad se utilizó la función `obtenerEstadisticas` del módulo `Oraculo`. Si se quiere hacer uso de la misma, se debe ingresar el número `6`
 - #### Salir `(7)`
     Fin del programa. Para activar esta función, se debe ingresar el número `7`
+
+## **Notas**
+El copyright atacó nuestro proyecto, por lo tanto para evitar problemas legales le traemos una versión ~~pirata~~ alterna: _El Currao Haskinator_. Para más información de la historia, puede leer el archivo pdf del mismo nombre.
