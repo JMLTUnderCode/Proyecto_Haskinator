@@ -43,7 +43,7 @@ cliente oracleData = do
 
         "2" -> do -- Predecir
             bigHead
-            newOraculo <- predecir oracleData oracleData ""
+            newOraculo <- predecir oracleData oracleData ("", "")
             cliente newOraculo
 
         "3" -> do -- Persistir
@@ -114,10 +114,10 @@ cliente oracleData = do
 
 -- Funcion que se encarga de realizar el proceso de prediccion. Muestra las interacciones con
 -- el usuario, solicita datos y realiza llamados a funciones de actualizacion de oraculos.
-predecir :: Oraculo -> Oraculo -> String -> IO Oraculo
+predecir :: Oraculo -> Oraculo -> (String, String) -> IO Oraculo
 
 -- En caso de recibir Prediccion se realiza la comprobacion.
-predecir (Prediccion prediction) originalOracle lastOption = do
+predecir (Prediccion prediction) originalOracle lastInteraction = do
     hFlush stdout
     -- Verificamos aceptacion de prediccion.
     putStr $ "   Haskinator : Prediccion: " ++ prediction ++ "\n                 Si / No" ++ "\n   Usuario    : "
@@ -150,16 +150,16 @@ predecir (Prediccion prediction) originalOracle lastOption = do
 
                     -- Actualizamos el Oraculo con los nuevos datos y predeccion dada.
                     let newQuestion = Pregunta distinguishedQuestion (Map.fromList [(optionForExpectedAnswer, Prediccion expectedAnswer), (optionForGivenPrediction, Prediccion prediction)])
-                    let updatedOraculo = actualizarOraculo (lastOption, Prediccion prediction) newQuestion originalOracle
+                    let updatedOraculo = actualizarOraculo (fst lastInteraction, Prediccion prediction) newQuestion originalOracle
                     putStrLn "   Graciah chava'! Pero sobre todo agradecido con el de arriba Papa Dio'"
                     return updatedOraculo
             else do
                 putStrLn $ "   Haskinator : Que dices chava'! La opcion '" ++ inputUser ++ "' no es valida."
-                predecir (Prediccion prediction) originalOracle lastOption
+                predecir (Prediccion prediction) originalOracle lastInteraction
 
 -- En caso de recibir Oraculo de tipo Pregunta se realizan confirmaciones de aceptaciones de
 -- opciones como tambien realizar el proceso de recorrido del arbol.
-predecir oracle originalOracle lastOption = do
+predecir oracle originalOracle lastInteraction = do
     let options = opciones oracle
     let answer = pregunta oracle
     let availableOptions = Map.keys options
@@ -168,7 +168,7 @@ predecir oracle originalOracle lastOption = do
     -- Verificamos que la opcion sea valida.
     if inputUser `isInfixOf` concat availableOptions then do
         let newOracle = respuesta oracle inputUser  
-        predecir newOracle originalOracle inputUser        
+        predecir newOracle originalOracle (inputUser, answer)        
         else do
             -- En caso de marcar NINGUNA luego de mostrar las opciones disponibles.
             if map toUpper inputUser == "NINGUNA" then do
@@ -185,12 +185,12 @@ predecir oracle originalOracle lastOption = do
                             return originalOracle
                             else do
                                 let newPrediction = Prediccion expectedAnswer
-                                let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle
+                                let updatedOraculo = actualizarOraculo' (optionForExpectedAnswer, newPrediction) answer originalOracle lastInteraction 1
                                 putStrLn "   Graciah chaval! Pero sobre todo agradecido con el de arriba Papa Dio'"
                                 return updatedOraculo
                 else do 
                     putStrLn $ "   La opcion '" ++ inputUser ++ "' no existe."
-                    predecir oracle originalOracle lastOption
+                    predecir oracle originalOracle lastInteraction
 
 -- Funcion que dado un archivo y la estructura de datos Oraculo plasma en el dicho archivo el arbol 
 -- de informacion descrito por Oraculo.
@@ -267,26 +267,29 @@ actualizarOraculo tuple toBeUpdate oracle = do
 
 -- Funcion encargada de actualizar el oraculo principal para el caso de que el usuario
 -- indique "Ninguna" de las opciones propuestas a una pregunta.
-actualizarOraculo' :: (String, Oraculo) -> String -> Oraculo -> Oraculo
-actualizarOraculo' toBeUpdate question oracle = do
+actualizarOraculo' :: (String, Oraculo) -> String -> Oraculo -> (String, String) -> Integer -> Oraculo
+actualizarOraculo' toBeUpdate question oracle lastInteraction it = do
     let mapToList = Map.toList $ opciones oracle
-    if question == pregunta oracle then do -- Caso cuando tenemos la pregunta inicial.
+    if it == 1 && question == pregunta oracle then do -- Caso cuando tenemos la pregunta inicial.
         let newOracle = uncurry Map.insert toBeUpdate $ opciones oracle
         Pregunta question newOracle
         else do -- Buscamos recursivamente.
             -- Buscamos los pares ordenados cuya segunda posicion sea Oraculo Pregunta.
-            let elementTarget = filter (\(y, x) -> esPregunta x && question == pregunta x) mapToList
-            if not (null elementTarget) then do
+            let questionTarget = filter (\(y, x) -> esPregunta x && snd lastInteraction == pregunta x) mapToList
+            if not (null questionTarget) then do
                 -- Realizamos la actualicion del nuevo oraculo.
+                let subOracle = Map.toList $ opciones $ snd (head questionTarget)
+                let elementTarget = filter (\(y, x) -> esPregunta x && question == pregunta x && y == fst lastInteraction) subOracle
                 let optionUpdate = opciones $ snd (head elementTarget)
                 let newInnerOracle = uncurry Map.insert toBeUpdate optionUpdate
-                let newOracle = Map.insert (fst (head elementTarget)) (Pregunta question newInnerOracle) $ opciones oracle
+                let newSubOracle = Map.insert (fst (head elementTarget)) (Pregunta question newInnerOracle) $ opciones $ snd (head questionTarget)
+                let newOracle = Map.insert (fst (head questionTarget)) (Pregunta (snd lastInteraction) newSubOracle) $ opciones oracle
                 let mainQuestion = pregunta oracle
                 Pregunta mainQuestion newOracle
                 else do
                     -- Realizamos la llamada recursiva para actualizas posteriormente el oraculo.
                     let elementsOracle = Map.elems $ opciones oracle
-                    let updatingOracle = map (\x -> if esPregunta x then actualizarOraculo' toBeUpdate question x else x) elementsOracle
+                    let updatingOracle = map (\x -> if esPregunta x then actualizarOraculo' toBeUpdate question x lastInteraction (it+1) else x) elementsOracle
                     let updatedOptions = Map.keys $ opciones oracle
                     let newOracleOptions = zip updatedOptions updatingOracle
                     let firstQuestion = pregunta oracle
